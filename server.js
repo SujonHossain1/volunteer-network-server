@@ -7,10 +7,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 
-app.get('/', (req, res) =>{
+app.get('/', (req, res) => {
     res.send({
         message: "api for volunteer network"
     })
@@ -19,10 +19,17 @@ app.get('/', (req, res) =>{
 /*Database Connetion */
 
 const uri = `mongodb+srv://volunteer-network:${process.env.DB_PASSWORD}@volunteer-network.hkwtl.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, { useNewUrlParser: true,  useUnifiedTopology: true });
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
-  const volunteerWorkCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer-works");
-  console.log("Database Connected");
+    const volunteerWorkCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer-works");
+
+    app.get('/workData', (req, res) => {
+        volunteerWorkCollection.find({ })
+            .toArray((err, documents) => {
+                res.send(documents)
+            })
+    })
+    console.log("Database Connected");
 });
 
 
