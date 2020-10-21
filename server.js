@@ -24,9 +24,17 @@ client.connect(err => {
     const volunteerWorkCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer-works");
 
     app.get('/workData', (req, res) => {
-        volunteerWorkCollection.find({ })
+        volunteerWorkCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
+            })
+    })
+
+    app.get('/volunteer-work-item/:workItem', (req, res) => {
+        volunteerWorkCollection.findOne({ _id: req.params.workItem})
+            .then(result => {
+                res.send(req.params.workItem)
+            
             })
     })
     console.log("Database Connected");
