@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
 
 const app = express();
 
@@ -22,6 +23,7 @@ const uri = `mongodb+srv://volunteer-network:${process.env.DB_PASSWORD}@voluntee
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
     const volunteerWorkCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer-works");
+    const registerCollection = client.db(`${process.env.DB_NAME}`).collection("register-works");
 
     app.get('/workData', (req, res) => {
         volunteerWorkCollection.find({})
@@ -30,14 +32,31 @@ client.connect(err => {
             })
     })
 
-    app.get('/volunteer-work-item/:workItem', (req, res) => {
-        volunteerWorkCollection.findOne({ _id: req.params.workItem})
+    app.get('/volunteer-organization/:id', (req, res) => {
+        volunteerWorkCollection.findOne({ _id: ObjectId(req.params.id) })
             .then(result => {
-                res.send(req.params.workItem)
-            
+                res.send(result)
             })
     })
-    console.log("Database Connected");
+
+    app.post('/register-works', (req, res) => {
+        const data = req.body;
+        registerCollection.insertOne(data)
+        .then((result) => {
+            res.send(result);
+        })
+        .catch(err => {
+            console.log(err)
+        }) 
+    })
+
+    app.get('/registers-user-data', (req, res) => {
+        registerCollection.find({})
+        .toArray((err, documents) => {
+            res.send(documents)
+        })
+    })
+
 });
 
 
