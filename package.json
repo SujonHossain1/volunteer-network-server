@@ -16,5 +16,4 @@
     "firebase-admin": "^9.3.0",
     "mongodb": "^3.6.2"
   }
-  
 }
