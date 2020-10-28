@@ -20,6 +20,7 @@ app.get('/', (req, res) => {
 
 // Generate Private Key
 const serviceAccount = require("./config/serviceAccountKey.json");
+const { reset } = require('nodemon');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -34,7 +35,7 @@ client.connect(err => {
     const volunteerWorkCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer-works");
     const registerCollection = client.db(`${process.env.DB_NAME}`).collection("register-works");
 
-
+  /***************** Validated User Information **********************/
     app.get('/check-is-signUp', (req, res) => {
         const bearer = req.headers.authorization;
 
@@ -43,14 +44,12 @@ client.connect(err => {
             admin.auth().verifyIdToken(idToken)
                 .then(decodedToken => {
                     res.send(decodedToken);
-                    console.log(decodedToken);
                 }).catch(error => {
                     res.status(401).send("unauthorized access 401");
                 });
         }
 
     })
-
     app.get('/register-workshop', (req, res) => {
         const bearer = req.headers.authorization;
 
@@ -76,6 +75,8 @@ client.connect(err => {
         }
     })
 
+    /********** Get All Data from Data Source **********/
+
     app.get('/workData', (req, res) => {
         volunteerWorkCollection.find({})
             .toArray((err, documents) => {
@@ -83,12 +84,25 @@ client.connect(err => {
             })
     })
 
+
+    /*********** Single Item Data **************** */
     app.get('/volunteer-organization/:id', (req, res) => {
         volunteerWorkCollection.findOne({ _id: ObjectId(req.params.id) })
             .then(result => {
                 res.send(result)
             })
     })
+
+    app.delete('/volunteer-organization-delete/:id', (req, res) => {
+        registerCollection.deleteOne({ _id: ObjectId(req.params.id) })
+            .then(result => {
+                if (result.deletedCount > 0) {
+                    res.send({ deleted: true })
+                }
+            })
+    })
+
+    /*************** insert organization **************/
 
     app.post('/register-works', (req, res) => {
         const data = req.body;
@@ -101,12 +115,17 @@ client.connect(err => {
             })
     })
 
-    app.get('/registers-user-data', (req, res) => {
+
+
+    /*********** Route for Admin *************/
+
+    app.get('/all-register-data', (req, res) => {
         registerCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
             })
     })
+
 
     console.log("Database Connected");
 
